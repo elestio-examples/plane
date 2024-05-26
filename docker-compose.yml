@@ -65,16 +65,26 @@ services:
     <<: *app-env
     image: makeplane/plane-frontend:${SOFTWARE_VERSION_TAG}
     restart: always
-    command: /usr/local/bin/start.sh web/server.js web
+    # command: /usr/local/bin/start.sh web/server.js web
+    command: node web/server.js web
     depends_on:
       - api
       - worker
+
+  admin:
+    image: makeplane/plane-admin:${SOFTWARE_VERSION_TAG}
+    restart: always
+    command: node admin/server.js admin
+    depends_on:
+      - api
+      - web
 
   space:
     <<: *app-env
     image: makeplane/plane-space:${SOFTWARE_VERSION_TAG}
     restart: always
-    command: /usr/local/bin/start.sh space/server.js space
+    # command: /usr/local/bin/start.sh space/server.js space
+    command: node space/server.js space
     depends_on:
       - api
       - worker
@@ -84,7 +94,8 @@ services:
     <<: *app-env
     image: makeplane/plane-backend:${SOFTWARE_VERSION_TAG}
     restart: always
-    command: ./bin/takeoff
+    # command: ./bin/takeoff
+    command: ./bin/docker-entrypoint-api.sh
     depends_on:
       - plane-db
       - plane-redis
@@ -93,7 +104,8 @@ services:
     <<: *app-env
     image: makeplane/plane-backend:${SOFTWARE_VERSION_TAG}
     restart: always
-    command: ./bin/worker
+    # command: ./bin/worker
+    command: ./bin/docker-entrypoint-worker.sh
     depends_on:
       - api
       - plane-db
@@ -103,7 +115,8 @@ services:
     <<: *app-env
     image: makeplane/plane-backend:${SOFTWARE_VERSION_TAG}
     restart: always
-    command: ./bin/beat
+    # command: ./bin/beat
+    command: ./bin/docker-entrypoint-beat.sh
     depends_on:
       - api
       - plane-db
@@ -112,9 +125,10 @@ services:
   migrator:
     <<: *app-env
     image: makeplane/plane-backend:${SOFTWARE_VERSION_TAG}
-    command: >
-      sh -c "python manage.py wait_for_db &&
-           python manage.py migrate"
+    # command: >
+    #   sh -c "python manage.py wait_for_db &&
+    #        python manage.py migrate"
+    command: ./bin/docker-entrypoint-migrator.sh
     depends_on:
       - plane-db
       - plane-redis
